@@ -55,7 +55,7 @@ BSD
 
 Author Information
 ------------------
-```
 author: [Vitaliy Razinkov](vitaliyra@nvidia.com)
-company: NVIDIA, Networking business unit
-```
+
+company: [NVIDIA](http://www.nvidia.com/), Networking business unit
+
