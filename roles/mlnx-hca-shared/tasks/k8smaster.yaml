@@ -1,0 +1,72 @@
+---
+# Tasks for K8s Master node
+- name: Install Openshift pip module
+  pip:
+    name: openshift
+
+- name: check for module openshift
+  python_requirements_facts:
+    dependencies:
+      - openshift
+
+#Create configmap for SRIOV device plugin    
+
+- name: create configmap for Shared DP
+  k8s:
+    state: present
+    definition:
+      kind: ConfigMap
+      apiVersion: v1
+      metadata:
+        name: rdma-devices
+        namespace: kube-system
+      data:
+        config.json: "{{ lookup('template', 'config_dp.j2') | from_yaml | to_nice_json }}"
+  run_once: true
+
+# Extract NFD components
+- name: Extract NFD daemonset's
+  unarchive:
+    src: '{{ nfd_release }}'
+    dest: /tmp
+    extra_opts:
+    - --wildcards
+    - '*/nfd-master.yaml.template'
+    - '*/nfd-worker-daemonset.yaml.template'
+    remote_src: true
+    mode: 0555
+
+# Install NFD master and NFD worker daemonset
+- name: Create a NFD Master Deployment by reading the definition from a local file
+  k8s:
+    state: present
+    src: /tmp/node-feature-discovery-0.6.0/nfd-master.yaml.template
+
+- name: Create a NFD worker Deployment by reading the definition from a local file
+  k8s:
+    state: present
+    src: /tmp/node-feature-discovery-0.6.0/nfd-worker-daemonset.yaml.template
+
+- name: Remove NFD directory
+  file:
+    path: /tmp/node-feature-discovery-0.6.0
+    state: absent
+
+# Install DP
+
+- name: Install Mellanox shared device plugin
+  k8s:
+    state: present
+    definition: "{{ lookup('url', '{{ shared_dp_ds }}', split_lines=False ) }}"
+  run_once: true
+
+
+#Install MPI Operator
+
+- name: Install Kubeflow MPI-Operator 
+  k8s:
+    state: present
+    definition: "{{ lookup('url', '{{ mpi_operator_dep }}', split_lines=False) }}"
+  run_once: true
+  when: kubeflow_mpi_operator
+

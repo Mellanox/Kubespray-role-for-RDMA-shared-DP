@@ -1,0 +1,39 @@
+---
+# vars file for mlnx-shared-hca role
+# Physical adapter names must be connected to separate InfiniBand fabric
+# For IB fabric ib virtualization must be enabled
+# max_hca variable in shared_resouces supports value: 1-1000
+# Example resources configuration of the multi resource pools with single device in pool and multiple devices in pool 
+shared_resources:
+- res_name: hca_shared_devices_a
+  max_hca: 50
+  devices:
+  - ib0
+- res_name: hca_shared_devices_b
+  max_hca: 500
+  devices:
+  - ib2
+  - ib3
+
+# If you need only single resources pool please remove the unused resource name with its components
+
+# Using for Host OS the Ubuntu LTS enablement (also called HWE or Hardware Enablement) kernel(required node reboot)
+HWE_kernel: true
+
+# MOFED installation
+# If install_mofed is FALSE, will be used kernel InfiniBand inbox driver
+
+install_mofed: false
+mlnx_ofed_package: "mlnx-ofed-kernel-only"
+mlnx_ofed_version: "latest"
+upstream_libs: true
+
+
+# Install Kubeflow MPI-Operator - https://github.com/kubeflow/mpi-operator
+
+kubeflow_mpi_operator: false
+mpi_operator_dep: "https://raw.githubusercontent.com/kubeflow/mpi-operator/master/deploy/v1/mpi-operator.yaml"
+
+# DP and CNI's URL's
+shared_dp_ds: "https://raw.githubusercontent.com/Mellanox/k8s-rdma-shared-dev-plugin/master/images/k8s-rdma-shared-dev-plugin-ds.yaml"
+nfd_release: "https://github.com/kubernetes-sigs/node-feature-discovery/archive/v0.6.0.tar.gz"

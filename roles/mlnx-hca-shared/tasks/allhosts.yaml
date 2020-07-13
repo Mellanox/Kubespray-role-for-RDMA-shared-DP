@@ -1,0 +1,42 @@
+---
+# Tasks file for Kubespray Role of RDMA Shared Device Plugin 
+# Supported OS: Ubuntu 18.04
+# Node 
+- name: Install aptitude
+  apt:
+    name: aptitude
+    state: latest
+    update_cache: yes
+  when: ansible_distribution == 'Ubuntu'
+
+- name: OS update. It takes a while.
+  apt:
+    name: linux-generic-hwe-18.04
+    state: latest
+    update_cache: yes
+  when: ansible_distribution == 'Ubuntu'
+
+- name: check if a reboot is required
+  shell: "[ -f /var/run/reboot-required ]"
+  failed_when: False
+  register: reboot_required
+  changed_when: reboot_required.rc == 0
+  notify: Reboot host and wait for it to restart
+
+- name: Update additional packages
+  apt:
+    upgrade: 'yes'
+    update_cache: yes
+
+- name: check if a reboot is required
+  shell: "[ -f /var/run/reboot-required ]"
+  failed_when: False
+  register: reboot_required
+  changed_when: reboot_required.rc == 0
+  notify: Reboot host and wait for it to restart
+    
+- name: MOFED installation
+  include_tasks: mofed-u-install.yaml
+  when: ansible_distribution == 'Ubuntu' and install_mofed
+
+

@@ -1,0 +1,70 @@
+---
+# Sub-task for install Mellanox OFED (upstream lisbs is optional)
+# #
+# # Author: Vitaliy Razinkov <vitaliyra@nvidia.com>
+# #
+
+- name: Check MLNX NIC's
+  shell: lspci | grep Mellanox | awk '{print $1}' | wc -l
+  register: check_mlnx_adapter
+
+- name: MOFED install Ubuntu18.04
+  block:
+    - name: Download and install Mellanox Technologies GPG-KEY
+      shell: wget -qO - https://www.mellanox.com/downloads/ofed/RPM-GPG-KEY-Mellanox | apt-key add -
+      args:
+        warn: no
+
+    - name: Download repository configuration file
+      get_url:
+        url: 'https://linux.mellanox.com/public/repo/mlnx_ofed/{{ mlnx_ofed_version }}/{{ ansible_lsb.id | lower }}{{ ansible_lsb.release }}/mellanox_mlnx_ofed.list'
+        dest: /etc/apt/sources.list.d/mellanox_mlnx_ofed.list
+        mode: '0755'
+
+    - name: Unset MOFED config
+      replace:
+        path: /etc/apt/sources.list.d/mellanox_mlnx_ofed.list
+        regexp: '^deb'
+        replace: '#deb'
+      when: upstream_libs
+
+    - name: Set MOFED config to upstream libs
+      replace:
+        path: /etc/apt/sources.list.d/mellanox_mlnx_ofed.list
+        regexp: '^#(.*deb.*{{ mlnx_ofed_version }}.*UPSTREAM_LIBS.*)$'
+        replace: '\1'
+      when: upstream_libs
+
+    - name: Run the cache update for MOFED
+      apt:
+        update_cache: yes
+
+    - name: Install MOFED package. It takes a while.
+      apt:
+        name: '{{ mlnx_ofed_package }}'
+        state: latest
+        update_cache: yes
+
+    - name: check availability of Mellanox OFED
+      stat:
+        path: /usr/bin/ofed_info
+      register: ofed_installed
+
+    - name: Check Mellanox OFED version
+      shell: /usr/bin/ofed_info -n
+      register: current_mofed_version
+      when: ofed_installed.stat.exists
+
+    - name: Mellanox OFED version
+      debug:
+        msg: "Mellanox OFED version - {{ current_mofed_version.stdout }}"
+      when: ofed_installed.stat.exists  
+
+    - name: check if a reboot is required
+      shell: "[ -f /var/run/reboot-required ]"
+      failed_when: False
+      register: reboot_required
+      changed_when: reboot_required.rc == 0
+      notify: Reboot host and wait for it to restart
+  when: check_mlnx_adapter.stdout|int > 0 and ansible_lsb.id == "Ubuntu"
+  
