@@ -9,7 +9,8 @@ Requirements
 ------------
 1. Kubernetes cluster is deployed by Kubespray
 2. Separate InfiniBand fabric with enabled port virtualization support in Subnet manager
-3. NVIDIA Mellanox ConnectX-4/5/6 netwirk interface card in InfiniBand mode
+3. NVIDIA Mellanox ConnectX-4/5/6 network interface card in InfiniBand mode
+
 
 
 Network requirements
