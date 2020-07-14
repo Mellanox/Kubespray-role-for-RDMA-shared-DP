@@ -16,7 +16,7 @@ Requirements
 Network requirements
 -------------------
 The Role is required an additional InfiniBand fabric for POD's with Native InfiniBand network interfaces.
-For assistance in designing the scaled InfiniBand fabric topology please use the Mellanox InfiniBand Cluster Configurator. 
+For assistance in designing the scaled InfiniBand fabric topology please use the [Mellanox InfiniBand Cluster Configurator](http://www.mellanox.com/clusterconfig/). 
 It is an online cluster configuration tool that offers flexible cluster sizes and options.
 
 
