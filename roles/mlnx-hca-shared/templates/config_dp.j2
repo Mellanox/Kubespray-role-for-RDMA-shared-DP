@@ -1,3 +1,4 @@
+configList:
 {% for shared_resource in shared_resources %}
   - resourceName: "{{ shared_resource.res_name }}"
     rdmaHcaMax: {{ shared_resource.max_hca | int }}

@@ -52,13 +52,34 @@
     path: /tmp/node-feature-discovery-0.6.0
     state: absent
 
-# Install DP
+# Download DP-ds.yaml
+- name: Download DP-ds.yaml
+  get_url:
+    url: '{{ shared_dp_ds }}'
+    dest: /tmp/k8s-shared-dp-ds.yaml
 
+
+# Path Dp-ds.yaml with NFD
+- name: Insert NFD path to DP-ds.yaml
+  blockinfile:
+    path: /tmp/k8s-shared-dp-ds.yaml
+    block: |2
+            nodeSelector:
+            # Required NFD v0.6.0
+              feature.node.kubernetes.io/custom-rdma.available: "true"
+    insertafter: '^.*hostNetwork: true'
+
+# Install DP
 - name: Install Mellanox shared device plugin
   k8s:
     state: present
-    definition: "{{ lookup('url', '{{ shared_dp_ds }}', split_lines=False ) }}"
+    src: /tmp/k8s-shared-dp-ds.yaml
   run_once: true
+
+- name: Remove DP-ds.yaml
+  file:
+    path: /tmp/k8s-shared-dp-ds.yaml
+    state: absent
 
 
 #Install MPI Operator
