@@ -9,7 +9,7 @@
     dependencies:
       - openshift
 
-#Create configmap for SRIOV device plugin    
+#Create configmap for RDMA device plugin    
 
 - name: create configmap for Shared DP
   k8s:
